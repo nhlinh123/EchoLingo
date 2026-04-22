@@ -32,31 +32,35 @@ class _AuthGateState extends State<AuthGate> {
 
   @override
   Widget build(BuildContext context) {
-    if (!signedIn) {
-      return Scaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('EchoLingo', style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(height: 12),
-                const Text('Sign in to continue learning with quote-based shadowing.'),
-                const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () => setState(() => signedIn = true),
-                  icon: const Icon(Icons.login),
-                  label: const Text('Continue with Google'),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      child: signedIn
+          ? const MainShell(key: ValueKey('main-shell'))
+          : Scaffold(
+              key: const ValueKey('auth-gate'),
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('EchoLingo', style: Theme.of(context).textTheme.headlineSmall),
+                      const SizedBox(height: 12),
+                      const Text('Sign in to continue learning with quote-based shadowing.'),
+                      const SizedBox(height: 24),
+                      FilledButton.icon(
+                        onPressed: () => setState(() => signedIn = true),
+                        icon: const Icon(Icons.login),
+                        label: const Text('Continue with Google'),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      );
-    }
-
-    return const MainShell();
+    );
   }
 }
 
@@ -70,7 +74,7 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int selected = 0;
 
-  static const screens = [
+  static const List<Widget> screens = [
     HomeScreen(),
     ReviewScreen(),
     LearnScreen(),
@@ -81,7 +85,11 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: screens[selected]),
+      body: SafeArea(
+        child: RepaintBoundary(
+          child: IndexedStack(index: selected, children: screens),
+        ),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: selected,
         onDestinationSelected: (value) => setState(() => selected = value),

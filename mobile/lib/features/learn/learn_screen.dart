@@ -30,14 +30,32 @@ class _LearnScreenState extends State<LearnScreen> {
           LearnFilters(
             selectedTopic: selectedTopic,
             selectedLevel: selectedLevel,
-            onTopicChanged: (value) => setState(() => selectedTopic = value),
-            onLevelChanged: (value) => setState(() => selectedLevel = value),
+            onTopicChanged: (value) => setState(() {
+              selectedTopic = value;
+              current = 0;
+            }),
+            onLevelChanged: (value) => setState(() {
+              selectedLevel = value;
+              current = 0;
+            }),
           ),
           AppSpacing.s16,
           Expanded(
-            child: filtered.isEmpty
-                ? const Center(child: Text('No quotes for selected filters'))
-                : QuoteCard(quote: filtered[current % filtered.length], showBack: true),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: filtered.isEmpty
+                  ? const Center(
+                      key: ValueKey('empty-filtered-quotes'),
+                      child: Text('No quotes for selected filters'),
+                    )
+                  : QuoteCard(
+                      key: ValueKey(filtered[current % filtered.length].id),
+                      quote: filtered[current % filtered.length],
+                      showBack: true,
+                    ),
+            ),
           ),
           AppSpacing.s12,
           FilledButton(

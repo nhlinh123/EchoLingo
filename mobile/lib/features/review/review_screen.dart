@@ -15,6 +15,7 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   static final QuoteService _quoteService = QuoteService();
+  late final quotes = _quoteService.allQuotes();
 
   int index = 0;
   bool showBack = false;
@@ -22,7 +23,6 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final quotes = _quoteService.allQuotes();
     final quote = quotes[index % quotes.length];
 
     return Padding(
@@ -33,7 +33,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
           const AppSectionTitle('Review'),
           if (lastAction != null) ...[
             AppSpacing.s8,
-            Text('Last action: $lastAction'),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: Text('Last action: $lastAction', key: ValueKey(lastAction)),
+            ),
           ],
           AppSpacing.s12,
           Expanded(
