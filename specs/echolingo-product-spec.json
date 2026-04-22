@@ -1,0 +1,243 @@
+{
+  "app": {
+    "name": "EchoLingo",
+    "version": "1.0.0",
+    "description": "English learning app using quote-based shadowing + flashcard + spaced repetition"
+  },
+  "auth": {
+    "method": "google_sso_only",
+    "provider": "Google",
+    "flow": [
+      "User opens app",
+      "Click 'Continue with Google'",
+      "OAuth2 via Google",
+      "Backend verify token",
+      "Create or return user",
+      "Issue JWT"
+    ]
+  },
+  "navigation": {
+    "type": "bottom_tab",
+    "tabs": ["home", "review", "learn", "collection", "profile"]
+  },
+  "screens": {
+    "home": {
+      "sections": [
+        "greeting",
+        "today_stats",
+        "today_review_cta",
+        "daily_quote",
+        "continue_learning"
+      ],
+      "components": {
+        "today_stats": ["streak", "mastered_count", "due_count"],
+        "daily_quote": ["text", "ipa", "play_audio"]
+      }
+    },
+    "review": {
+      "type": "flashcard",
+      "data_source": "quotes_due_today",
+      "card": {
+        "front": ["quote", "toggle_ipa"],
+        "back": ["translation", "ipa", "audio_controls", "shadow_button"]
+      },
+      "actions": {
+        "swipe_right": "GOOD",
+        "swipe_left": "AGAIN",
+        "swipe_up": "HARD",
+        "swipe_down": "EASY"
+      },
+      "empty_state": "No reviews today"
+    },
+    "learn": {
+      "type": "flashcard",
+      "daily_limit": 10,
+      "filters": ["topic", "level"],
+      "flow": ["show_quote", "flip", "shadow", "swipe_create_progress"]
+    },
+    "collection": {
+      "tabs": ["saved", "playlists"],
+      "features": [
+        "save_quote",
+        "remove_quote",
+        "create_playlist",
+        "play_shadow_mode"
+      ]
+    },
+    "profile": {
+      "sections": ["user_info", "stats", "settings_entry", "logout"],
+      "stats": ["total_learned", "streak", "accuracy"]
+    },
+    "settings": {
+      "sections": {
+        "learning": [
+          "daily_new_limit",
+          "review_reminder_time",
+          "auto_play_audio",
+          "show_ipa_default"
+        ],
+        "audio": ["voice_accent", "playback_speed", "loop_count"],
+        "srs": ["enable_srs", "reset_progress"],
+        "notification": ["daily_reminder"],
+        "app": ["dark_mode", "language"]
+      }
+    }
+  },
+  "widget": {
+    "types": ["small", "medium"],
+    "data_source": "quotes_due_today",
+    "features": ["display_quote", "play_audio", "open_review"]
+  },
+  "srs": {
+    "intervals_days": [1, 3, 7, 21, 30],
+    "states": ["new", "learning", "reviewing", "mastered"],
+    "actions": ["AGAIN", "HARD", "GOOD", "EASY"],
+    "algorithm": {
+      "AGAIN": "interval_index = 0",
+      "HARD": "interval_index = max(0, current - 1)",
+      "GOOD": "interval_index = current + 1",
+      "EASY": "interval_index = current + 2"
+    },
+    "next_review": "now + intervals[interval_index]"
+  },
+  "data_model": {
+    "User": {
+      "id": "uuid",
+      "email": "string",
+      "name": "string",
+      "avatar": "string"
+    },
+    "Quote": {
+      "id": "uuid",
+      "text": "string",
+      "ipa": "string",
+      "translation": "string",
+      "audio_url": "string",
+      "topic": "string",
+      "level": "string"
+    },
+    "UserQuoteProgress": {
+      "user_id": "uuid",
+      "quote_id": "uuid",
+      "interval_index": "number",
+      "repetition_count": "number",
+      "next_review_at": "datetime",
+      "last_reviewed_at": "datetime",
+      "status": "string"
+    }
+  },
+  "api": {
+    "endpoints": [
+      "GET /quotes/daily",
+      "GET /review/today",
+      "POST /review/submit",
+      "GET /learn/new",
+      "POST /auth/google"
+    ]
+  },
+  "notifications": {
+    "trigger": "daily_check",
+    "condition": "due_quotes > 0",
+    "message": "You have X quotes to review today"
+  },
+  "design_system": {
+    "philosophy": "minimal + soft playful + content-first",
+    "colors": {
+      "light": {
+        "primary": "#4F46E5",
+        "background": "#F9FAFB",
+        "surface": "#FFFFFF",
+        "text": "#111827",
+        "subtext": "#6B7280"
+      },
+      "dark": {
+        "background": "#0F172A",
+        "surface": "#1E293B",
+        "text": "#F8FAFC",
+        "subtext": "#94A3B8"
+      },
+      "feedback": {
+        "again": "#EF4444",
+        "hard": "#F59E0B",
+        "good": "#10B981",
+        "easy": "#3B82F6"
+      },
+      "illustration": ["#E0E7FF", "#FEF3C7", "#DCFCE7"]
+    },
+    "typography": {
+      "font_family": "Inter",
+      "quote": {
+        "size": 24,
+        "weight": 600,
+        "line_height": 1.4
+      },
+      "ipa": {
+        "size": 15,
+        "style": "monospace",
+        "color": "subtext"
+      },
+      "translation": {
+        "size": 16,
+        "style": "italic"
+      },
+      "ui": {
+        "title": 18,
+        "body": 14,
+        "caption": 12
+      }
+    },
+    "layout": {
+      "spacing": [8, 12, 16, 20, 24],
+      "radius": {
+        "card": 24,
+        "button": 12
+      },
+      "max_width": 600
+    },
+    "components": {
+      "card": {
+        "background": "surface",
+        "padding": 20,
+        "shadow": "soft"
+      },
+      "button": {
+        "height": 48,
+        "radius": 12
+      },
+      "audio_button": {
+        "shape": "circle",
+        "style": "floating"
+      }
+    },
+    "animation": {
+      "card_flip": {
+        "duration_ms": 220
+      },
+      "swipe": {
+        "type": "spring"
+      },
+      "press": {
+        "scale": 0.96
+      }
+    },
+    "icons": {
+      "style": "outline",
+      "shape": "rounded"
+    }
+  },
+  "analytics": {
+    "metrics": [
+      "daily_active_users",
+      "review_completion_rate",
+      "retention_d1_d7_d30"
+    ]
+  },
+  "architecture": {
+    "mobile": "Flutter",
+    "backend": "NestJS_or_.NET",
+    "database": "PostgreSQL",
+    "cache": "Redis",
+    "storage": "S3",
+    "pattern": "clean_architecture"
+  }
+}
